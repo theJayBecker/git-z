@@ -1,0 +1,137 @@
+#!/bin/bash
+
+# Gen Z Git Wrapper — Safe for global aliasing
+# Alias this script as `git` in interactive shells only
+
+REAL_GIT="$(command -v git)"
+
+# 🛡 Only wrap in interactive terminals (not scripts, CI, etc.)
+if [[ ! -t 1 ]]; then
+  exec "$REAL_GIT" "$@"
+fi
+
+# 👻 Function: fallback usage message
+function usage {
+  echo "💀 Unrecognized Gen Z command: $1"
+  echo "Passing through to real git..."
+}
+
+# 🧠 Parse command
+command="$1"
+second="$2"
+
+# Handle special case: 'finna add'
+if [[ "$command $second" == "finna add" ]]; then
+  echo "✨ Staging for vibes... ✨"
+  exec "$REAL_GIT" add .
+fi
+
+case "$command" in
+  yoink)
+    echo "📥 Yoinking the latest clout..."
+    exec "$REAL_GIT" pull
+    ;;
+
+  yeet)
+    echo "📤 Yeeting your cringe to origin..."
+    exec "$REAL_GIT" push
+    ;;
+
+  bet)
+    shift
+    echo "📝 Locking it in, no cap: $*"
+    exec "$REAL_GIT" commit -m "$*"
+    ;;
+
+  cap)
+    echo "🧢 Rewinding the cringe, no cap..."
+    exec "$REAL_GIT" reset --hard
+    ;;
+
+  drip)
+    echo "💧 Checking your drip..."
+    exec "$REAL_GIT" status
+    ;;
+
+  ghost)
+    shift
+    echo "👻 Ghosting to branch $*..."
+    exec "$REAL_GIT" checkout "$@"
+    ;;
+
+  "throw")
+    if [[ "$second" == "hands" ]]; then
+      shift 2
+      echo "👊 Throwing hands with $*..."
+      exec "$REAL_GIT" merge "$@"
+    else
+      usage "$command $second"
+      exec "$REAL_GIT" "$@"
+    fi
+    ;;
+
+  realtalk)
+    echo "🧱 No more cap. This repo is *for real*..."
+    exec "$REAL_GIT" init
+    ;;
+
+  shill)
+    shift
+    echo "🧃 Shilling to origin at: $*"
+    exec "$REAL_GIT" remote add origin "$@"
+    ;;
+
+  receipts)
+    echo "🧾 Pulling up the receipts..."
+    exec "$REAL_GIT" log
+    ;;
+
+  cancel)
+    shift
+    echo "🚫 Cancelling the nonsense..."
+    exec "$REAL_GIT" revert "$@"
+    ;;
+
+  vibecheck)
+    echo "🎯 Performing a vibe check..."
+    exec "$REAL_GIT" diff
+    ;;
+
+  maincharacter)
+    echo "🌟 Becoming the main character..."
+    exec "$REAL_GIT" switch main
+    ;;
+
+  glowup)
+    shift
+    echo "📈 Time for a glow-up history rewrite..."
+    exec "$REAL_GIT" rebase -i HEAD~${1:-3}
+    ;;
+
+  halp)
+    echo "🙋‍♂️ Git-Z Command Glossary:"
+    echo ""
+    echo "  yoink             → git pull               📥  Pull the latest clout from origin"
+    echo "  yeet              → git push               📤  Fling your cringe commits into the void"
+    echo "  finna add         → git add .              ✨  Stage everything for the vibes"
+    echo "  bet \"msg\"         → git commit -m          📝  Lock in your changes, fr no cap"
+    echo "  cap               → git reset --hard       🧢  Undo all that nonsense, no cap"
+    echo "  drip              → git status             💧  Check the fit — what's changed"
+    echo "  ghost <branch>    → git checkout           👻  Dip to another branch, quietly"
+    echo "  throw hands <b>   → git merge              👊  Smash branches together like drama"
+    echo "  realtalk          → git init               🧱  Start the repo, no more games"
+    echo "  shill <url>       → git remote add origin  🧃  Link the repo to origin and flex"
+    echo "  receipts          → git log                🧾  Show the whole messy history"
+    echo "  cancel <commit>   → git revert             🚫  Walk it back. No shame."
+    echo "  vibecheck         → git diff               🎯  Check for vibe violations"
+    echo "  maincharacter     → git switch main        🌟  You’re the star now"
+    echo "  glowup [n]        → git rebase -i HEAD~n   📈  Rewrite history to make it ✨slap✨"
+    echo ""
+    echo "Tip: Works only in your terminal — CI and tools still use boring git."
+    ;;
+
+  *)
+    usage "$command"
+    exec "$REAL_GIT" "$@"
+    ;;
+esac
