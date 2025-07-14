@@ -2,23 +2,29 @@
 
 set -e
 
-REPO_URL="https://github.com/theJayBecker/git-z"
-RAW_URL="$REPO_URL/raw/main/git-z"
 INSTALL_DIR="$HOME/.local/bin"
 SCRIPT_NAME="git-z"
+SCRIPT_SOURCE="$(pwd)/$SCRIPT_NAME"
 
-echo "📦 Installing git-z from $REPO_URL..."
+echo "📦 Installing git-z from local repo..."
+
+# Validate script presence
+if [[ ! -f "$SCRIPT_SOURCE" ]]; then
+  echo "❌ Could not find $SCRIPT_NAME in current directory."
+  echo "Make sure you're running this script from the root of the git-z repo."
+  exit 1
+fi
 
 # Create bin dir if it doesn't exist
 mkdir -p "$INSTALL_DIR"
 
-# Download script
-curl -sSL "$RAW_URL" -o "$INSTALL_DIR/$SCRIPT_NAME"
+# Copy the script to ~/.local/bin
+cp "$SCRIPT_SOURCE" "$INSTALL_DIR/$SCRIPT_NAME"
 chmod +x "$INSTALL_DIR/$SCRIPT_NAME"
+echo "✅ Copied $SCRIPT_NAME to $INSTALL_DIR"
 
 # Detect shell
 USER_SHELL="$(basename "$SHELL")"
-
 echo "🧠 Detected shell: $USER_SHELL"
 echo ""
 
