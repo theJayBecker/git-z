@@ -33,8 +33,14 @@ case "$command" in
     ;;
 
   yeet)
-    echo "📤 Yeeting your cringe to origin..."
-    exec "$REAL_GIT" push
+    shift
+    if [[ "$1" == "--no-cap" ]]; then
+      echo "💥 Yeeting your cringe *with force*, no cap..."
+      exec "$REAL_GIT" push --force "${@:2}"
+    else
+      echo "📤 Yeeting your cringe to origin..."
+      exec "$REAL_GIT" push "$@"
+    fi
     ;;
 
   bet)
@@ -109,23 +115,24 @@ case "$command" in
     ;;
 
   halp)
-    echo "🙋‍♂️ Git-Z Command Glossary:"
+    echo "🙋♂ Git-Z Command Glossary:"
     echo ""
-    echo "  yoink             → git pull               📥  Pull the latest clout from origin"
-    echo "  yeet              → git push               📤  Fling your cringe commits into the void"
-    echo "  finna add         → git add .              ✨  Stage everything for the vibes"
-    echo "  bet \"msg\"         → git commit -m          📝  Lock in your changes, fr no cap"
-    echo "  cap               → git reset --hard       🧢  Undo all that nonsense, no cap"
-    echo "  drip              → git status             💧  Check the fit — what's changed"
-    echo "  ghost <branch>    → git checkout           👻  Dip to another branch, quietly"
-    echo "  throw hands <b>   → git merge              👊  Smash branches together like drama"
-    echo "  realtalk          → git init               🧱  Start the repo, no more games"
-    echo "  shill <url>       → git remote add origin  🧃  Link the repo to origin and flex"
-    echo "  receipts          → git log                🧾  Show the whole messy history"
-    echo "  cancel <commit>   → git revert             🚫  Walk it back. No shame."
-    echo "  vibecheck         → git diff               🎯  Check for vibe violations"
-    echo "  maincharacter     → git switch main        🌟  You’re the star now"
-    echo "  glowup [n]        → git rebase -i HEAD~n   📈  Rewrite history to make it ✨slap✨"
+    echo "  yoink                   → git pull               📥  Pull the latest clout from origin"
+    echo "  yeet                   → git push               📤  Fling your cringe commits into the void"
+    echo "  yeet --no-cap          → git push --force       💥  Yeet with aggression, fr"
+    echo "  finna add              → git add .              ✨  Stage everything for the vibes"
+    echo "  bet \"msg\"             → git commit -m          📝  Lock in your changes, fr no cap"
+    echo "  cap                   → git reset --hard       🧢  Undo all that nonsense, no cap"
+    echo "  drip                  → git status             💧  Check the fit — what's changed"
+    echo "  ghost <branch>        → git checkout           👻  Dip to another branch, quietly"
+    echo "  throw hands <branch>  → git merge              👊  Smash branches together like drama"
+    echo "  realtalk              → git init               🧱  Start the repo, no more games"
+    echo "  shill <url>           → git remote add origin  🧃  Link the repo to origin and flex"
+    echo "  receipts              → git log                🧾  Show the whole messy history"
+    echo "  cancel <commit>       → git revert             🚫  Walk it back. No shame."
+    echo "  vibecheck             → git diff               🎯  Check for vibe violations"
+    echo "  maincharacter         → git switch main        🌟  You’re the star now"
+    echo "  glowup [n]            → git rebase -i HEAD~n   📈  Rewrite history to make it ✨slap✨"
     echo ""
     echo "Tip: Works only in your terminal — CI and tools still use boring git."
     ;;
