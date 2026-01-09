@@ -28,7 +28,15 @@ USER_SHELL="$(basename "$SHELL")"
 echo "🧠 Detected shell: $USER_SHELL"
 echo ""
 
+# Check if fish is installed
+FISH_INSTALLED=false
+if command -v fish >/dev/null 2>&1; then
+  FISH_INSTALLED=true
+  echo "🐟 Fish shell detected as installed"
+fi
+
 # Bash/Zsh alias setup
+PROFILE_FILE=""
 if [[ "$USER_SHELL" == "bash" || "$USER_SHELL" == "zsh" ]]; then
   PROFILE_FILE="$HOME/.bashrc"
   [[ "$USER_SHELL" == "zsh" ]] && PROFILE_FILE="$HOME/.zshrc"
@@ -39,9 +47,33 @@ if [[ "$USER_SHELL" == "bash" || "$USER_SHELL" == "zsh" ]]; then
   else
     echo "ℹ️ Alias already exists in $PROFILE_FILE"
   fi
-
-# Fish shell setup
 elif [[ "$USER_SHELL" == "fish" ]]; then
+  # If current shell is fish, we'll still set up bashrc if it exists
+  if [[ -f "$HOME/.bashrc" ]]; then
+    PROFILE_FILE="$HOME/.bashrc"
+    if ! grep -q "alias git='git-z'" "$PROFILE_FILE"; then
+      echo "alias git='git-z'" >> "$PROFILE_FILE"
+      echo "🪄 Alias added to $PROFILE_FILE"
+    else
+      echo "ℹ️ Alias already exists in $PROFILE_FILE"
+    fi
+  fi
+else
+  echo "⚠️ Unsupported shell: $USER_SHELL"
+  # Still try to set up bashrc if it exists
+  if [[ -f "$HOME/.bashrc" ]]; then
+    PROFILE_FILE="$HOME/.bashrc"
+    if ! grep -q "alias git='git-z'" "$PROFILE_FILE"; then
+      echo "alias git='git-z'" >> "$PROFILE_FILE"
+      echo "🪄 Alias added to $PROFILE_FILE"
+    else
+      echo "ℹ️ Alias already exists in $PROFILE_FILE"
+    fi
+  fi
+fi
+
+# Fish shell setup (if fish is installed, regardless of current shell)
+if [[ "$FISH_INSTALLED" == true ]]; then
   FUNC_PATH="$HOME/.config/fish/functions/git.fish"
   mkdir -p "$(dirname "$FUNC_PATH")"
 
@@ -58,25 +90,36 @@ end
 EOF
 
   echo "🐟 Fish function created at $FUNC_PATH"
-else
-  echo "⚠️ Unsupported shell: $USER_SHELL — please add git → git-z manually"
 fi
 
 # Ensure ~/.local/bin is in PATH
 if ! echo "$PATH" | grep -q "$INSTALL_DIR"; then
   echo "🔧 Adding $INSTALL_DIR to PATH..."
-  if [[ "$USER_SHELL" == "fish" ]]; then
-    fish -c "set -U fish_user_paths $INSTALL_DIR \$fish_user_paths"
-  else
-    echo "export PATH=\"\$PATH:$INSTALL_DIR\"" >> "$PROFILE_FILE"
+  if [[ "$FISH_INSTALLED" == true ]]; then
+    fish -c "set -U fish_user_paths $INSTALL_DIR \$fish_user_paths" 2>/dev/null || true
+  fi
+  if [[ -n "$PROFILE_FILE" ]]; then
+    if ! grep -q "export PATH.*$INSTALL_DIR" "$PROFILE_FILE"; then
+      echo "export PATH=\"\$PATH:$INSTALL_DIR\"" >> "$PROFILE_FILE"
+    fi
   fi
 fi
 
 echo ""
 echo "✅ Installation complete."
-if [[ "$USER_SHELL" == "fish" ]]; then
-  echo "👉 Open a new terminal or run: source ~/.config/fish/config.fish"
-else
-  echo "👉 Open a new terminal or run: source $PROFILE_FILE"
+RELOAD_COMMANDS=()
+if [[ "$FISH_INSTALLED" == true ]]; then
+  RELOAD_COMMANDS+=("source ~/.config/fish/config.fish")
+fi
+if [[ -n "$PROFILE_FILE" ]]; then
+  RELOAD_COMMANDS+=("source $PROFILE_FILE")
+fi
+if [[ ${#RELOAD_COMMANDS[@]} -gt 0 ]]; then
+  echo "👉 Open a new terminal or run: ${RELOAD_COMMANDS[0]}"
+  if [[ ${#RELOAD_COMMANDS[@]} -gt 1 ]]; then
+    for cmd in "${RELOAD_COMMANDS[@]:1}"; do
+      echo "   or run: $cmd"
+    done
+  fi
 fi
 echo "👉 Then try: git halp"
